@@ -1,116 +1,129 @@
 import { TextAttributes } from "@opentui/core";
-import { useState } from "react";
+import { useState, useCallback } from "react";
+import Navbar from "./components/navbar";
+import ChatInput from "./components/chat-input";
+import EmptyState from "./components/empty-state";
 
-type ChatMessage = {
-  role: "user" | "assistant";
-  Text: string;
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+export type Role = "user" | "assistant";
+
+export type ChatMessage = {
+  id: string;
+  role: Role;
+  text: string;
+  timestamp: number;
 };
 
-const NAV_TITLE = "ShiftTab";
-const MODEL_LABEL = "GPT-5.5";
-const INPUT_PLACEHOLDER = "Ask anything...";
+// ─── Constants ────────────────────────────────────────────────────────────────
 
-function Navbar() {
+const ROLE_LABEL: Record<Role, string> = {
+  user:      "You",
+  assistant: "ShiftTab",
+};
+
+const ROLE_COLOR: Record<Role, string> = {
+  user:      "#7aa2f7",
+  assistant: "#9ece6a",
+};
+
+// ─── ChatBubble ───────────────────────────────────────────────────────────────
+
+function ChatBubble({ message }: { message: ChatMessage }) {
+  const isUser = message.role === "user";
+
   return (
-    <box flexDirection="row" alignItems="center" justifyContent="space-between" height={3} paddingX={1}>
-      <text attributes={TextAttributes.BOLD}>◉ {NAV_TITLE}</text>
-
-      <text>{MODEL_LABEL} ▼</text>
-
-      <box flexDirection="row" alignItems="center" gap={2}>
-        <text attributes={TextAttributes.DIM}>Tokens</text>
-        <text attributes={TextAttributes.DIM}>⚙</text>
-        <text attributes={TextAttributes.DIM}>☰</text>
-      </box>
+    <box flexDirection="column" gap={0}>
+      <text fg={ROLE_COLOR[message.role]} attributes={TextAttributes.BOLD}>
+        {ROLE_LABEL[message.role]}
+      </text>
+      <text
+        wrapMode="word"
+        attributes={isUser ? TextAttributes.NONE : TextAttributes.DIM}
+      >
+        {message.text}
+      </text>
     </box>
   );
 }
 
-function EmptyState() {
+// ─── Divider ──────────────────────────────────────────────────────────────────
+
+function Divider() {
   return (
-    <box flexGrow={1} justifyContent="center" alignItems="center" flexDirection="column" gap={1} paddingX={2}>
-      <text>👋</text>
-      <text attributes={TextAttributes.BOLD}>Welcome to ShiftTab</text>
-      <text attributes={TextAttributes.DIM}>How can I help you today?</text>
-      <text attributes={TextAttributes.DIM}>Ask coding questions, debug projects, explain concepts, or write code.</text>
-    </box>
+    <box height={1} borderStyle="single" border={["bottom"]} opacity={0.3} />
   );
 }
+
+// ─── ChatMessages ─────────────────────────────────────────────────────────────
 
 function ChatMessages({ messages }: { messages: ChatMessage[] }) {
   return (
-    <box flexGrow={1} paddingX={1} paddingY={1} flexDirection="column" gap={1}>
+    <scrollbox
+      flexGrow={1}
+      scrollY
+      stickyScroll
+      stickyStart="bottom"
+      paddingX={2}
+      paddingY={1}
+      verticalScrollbarOptions={{ showArrows: true }}
+    >
       {messages.map((message, index) => (
-        <box key={index} flexDirection="column" gap={0}>
-          <text attributes={message.role === "user" ? TextAttributes.BOLD : TextAttributes.DIM}>
-            {message.role === "user" ? "User" : "Assistant"}
-          </text>
-          <text>{message.Text}</text>
+        <box key={message.id} flexDirection="column" gap={0}>
+          <ChatBubble message={message} />
+          {index < messages.length - 1 && <Divider />}
         </box>
       ))}
-    </box>
+    </scrollbox>
   );
 }
 
-function ChatInput({
-  value,
-  onValueChange,
-  onSubmit,
-}: {
-  value: string;
-  onValueChange: (value: string) => void;
-  onSubmit: (value: string) => void;
-}) {
-  return (
-    <box height={3} flexDirection="column" paddingX={1} paddingY={0}>
-      <box flexDirection="row" alignItems="center" gap={1}>
-        <text>▸</text>
-        <input
-          placeholder={INPUT_PLACEHOLDER}
-          focused
-          value={value}
-          onInput={onValueChange}
-          onSubmit={() => onSubmit(value)}
-          flexGrow={1}
-        />
-        <text attributes={TextAttributes.DIM}>⌘↵</text>
-      </box>
-
-      <box justifyContent="space-between" paddingTop={0}>
-        <text attributes={TextAttributes.DIM}>@file /command Ctrl+K Shift+Tab Esc</text>
-      </box>
-    </box>
-  );
-}
+// ─── App ──────────────────────────────────────────────────────────────────────
 
 export function App() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [draft, setDraft] = useState("");
 
-  const sendMessage = (value: string) => {
+  const sendMessage = useCallback((value: string) => {
     const trimmed = value.trim();
-    if (!trimmed) {
-      return;
-    }
+    if (!trimmed) return;
 
-    setMessages((current) => [
-      ...current,
-      { role: "user", Text: trimmed },
-      { role: "assistant", Text: "ShiftTab will answer here once AI integration is added." },
+    const now = Date.now();
+
+    setMessages((prev) => [
+      ...prev,
+      {
+        id:        `${now}-user`,
+        role:      "user",
+        text:      trimmed,
+        timestamp: now,
+      },
+      {
+        id:        `${now}-assistant`,
+        role:      "assistant",
+        text:      "ShiftTab will answer here once AI integration is added.",
+        timestamp: now + 1,
+      },
     ]);
+
     setDraft("");
-  };
+  }, []);
 
   return (
-    <box flexDirection="column" height="100%">
+    <box flexDirection="column" height="100%" width="100%">
       <Navbar />
 
       <box flexGrow={1}>
-        {messages.length === 0 ? <EmptyState /> : <ChatMessages messages={messages} />}
+        {messages.length === 0
+          ? <EmptyState />
+          : <ChatMessages messages={messages} />}
       </box>
 
-      <ChatInput value={draft} onValueChange={setDraft} onSubmit={sendMessage} />
+      <ChatInput
+        value={draft}
+        onValueChange={setDraft}
+        onSubmit={sendMessage}
+      />
     </box>
   );
 }
-
