@@ -12,7 +12,7 @@ const ChatInput = ({
 }) => {
   return (
   <box flexDirection={'row'} alignItems='center' justifyContent='center' >
-  <box  borderStyle='heavy' borderColor={'gray'} gap={1} flexDirection="column" justifyContent='center'width={"60%"} marginBottom={`${1}%`} paddingX={1} paddingY={0}>
+  <box  borderStyle='heavy' width={'100%'} border={['bottom', 'top']}  borderColor={'gray'} gap={1} flexDirection="column" justifyContent='center'  marginBottom={`${1}%`} paddingX={1} paddingY={0}>
         <box flexDirection="row" alignItems="center" gap={1}>
           <text>▸</text>
           <input

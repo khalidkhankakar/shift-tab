@@ -3,10 +3,11 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "workspaces": ["packages/*"],
   "scripts": {
-    "dev:cli": "bun run --watch /packages/cli/src/main.tsx",
-    "dev:server": "bun run --hot /packages/server/src/index.ts"
+    "dev": "bun run --watch src/main.tsx",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
   },
   "dependencies": {
     "@hono/zod-validator": "^0.9.0",

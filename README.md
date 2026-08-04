@@ -2,7 +2,7 @@
 
 A terminal-native AI chat interface built with [opentui](https://github.com/opentui/opentui) and React. Runs entirely in your terminal — no browser, no Electron.
 
-![shifttab](public/shittab.png)
+![shifttab](shittab.png)
 
 ## Features
 
