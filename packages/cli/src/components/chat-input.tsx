@@ -1,37 +1,49 @@
-import { TextAttributes } from '@opentui/core';
-import React from 'react'
+import type { UseChatHelpers } from "@ai-sdk/react";
+import type { ChatStatus, UIMessage } from "ai";
+import { useCallback, useState } from "react";
 
-const ChatInput = ({
-  value,
-  onValueChange,
-  onSubmit,
-}: {
-  value: string;
-  onValueChange: (value: string) => void;
-  onSubmit: (value: string) => void;
-}) => {
-  return (
-  <box flexDirection={'row'} alignItems='center' justifyContent='center' >
-  <box  borderStyle='heavy' width={'100%'} border={['bottom', 'top']}  borderColor={'gray'} gap={1} flexDirection="column" justifyContent='center'  marginBottom={`${1}%`} paddingX={1} paddingY={0}>
-        <box flexDirection="row" alignItems="center" gap={1}>
-          <text>▸</text>
-          <input
-            placeholder={"Ask anything..."}
-            focused
-            value={value}
-            onInput={onValueChange}
-            onSubmit={() => onSubmit(value)}
-            flexGrow={1}
-          />
-          <text attributes={TextAttributes.DIM}>⌘↵</text>
-        </box>
-  
-        <box justifyContent="space-between" paddingTop={0}>
-          <text  attributes={TextAttributes.DIM}>@file /command Ctrl+K Shift+Tab Esc</text>
-        </box>
-      </box>
-      </box>
-  )
+interface ChatInputProps {
+  sendMessage: UseChatHelpers<UIMessage>["sendMessage"];
+  status: ChatStatus;
 }
 
-export default ChatInput
+export function ChatInput({ sendMessage, status }: ChatInputProps) {
+
+    const [inputValue, setInputValue] = useState("");
+
+  const isLoading = status === 'streaming';
+  const handleKey = useCallback(
+    (key: string) => {
+      if (key === "return" && inputValue.trim()) {
+        sendMessage({ text: inputValue });
+      }
+    },
+    [sendMessage, isLoading, inputValue]
+  );
+
+  return (
+    <box
+      flexDirection="row"
+      alignItems="center"
+      height={3}
+      flexShrink={0}
+      borderStyle="rounded"
+      borderColor={isLoading ? "yellow" : "cyan"}
+      paddingLeft={1}
+      paddingRight={1}
+    >
+      <text bg={isLoading ? "yellow" : "cyan"} marginRight={1}>
+        {isLoading ? "⏳" : "›"}
+      </text>
+      <input
+        flexGrow={1}
+        value={inputValue}
+        onChange={setInputValue}
+        onSubmit={()=>sendMessage({ text: inputValue })}
+        placeholder={isLoading ? "Waiting for response..." : "Type a message and press Enter"}
+        placeholderColor="gray"
+        focused={!isLoading}
+      />
+    </box>
+  );
+}

@@ -1,6 +1,8 @@
 {
   "name": "server",
   "dependencies": {
+    "@ai-sdk/google": "^4.0.34",
+    "ai": "^7.0.52",
     "hono": "^4.13.0"
   },
   "devDependencies": {

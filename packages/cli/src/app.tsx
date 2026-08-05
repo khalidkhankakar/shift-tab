@@ -1,128 +1,42 @@
-import { TextAttributes } from "@opentui/core";
-import { useState, useCallback } from "react";
+import { useState } from "react";
+import { useChat } from "@ai-sdk/react";
+
 import Navbar from "./components/navbar";
-import ChatInput from "./components/chat-input";
-import EmptyState from "./components/empty-state";
+import { ChatMessages } from "./components/chat-messages";
+import { ChatInput } from "./components/chat-input";
+import { DefaultChatTransport } from "ai";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-export type Role = "user" | "assistant";
-
-export type ChatMessage = {
-  id: string;
-  role: Role;
-  text: string;
-  timestamp: number;
-};
-
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-const ROLE_LABEL: Record<Role, string> = {
-  user:      "You",
-  assistant: "ShiftTab",
-};
-
-const ROLE_COLOR: Record<Role, string> = {
-  user:      "#7aa2f7",
-  assistant: "#9ece6a",
-};
-
-// ─── ChatBubble ───────────────────────────────────────────────────────────────
-
-function ChatBubble({ message }: { message: ChatMessage }) {
-  const isUser = message.role === "user";
-
-  return (
-    <box flexDirection="column" gap={0}>
-      <text fg={ROLE_COLOR[message.role]} attributes={TextAttributes.BOLD}>
-        {ROLE_LABEL[message.role]}
-      </text>
-      <text
-        wrapMode="word"
-        attributes={isUser ? TextAttributes.NONE : TextAttributes.DIM}
-      >
-        {message.text}
-      </text>
-    </box>
-  );
-}
-
-// ─── Divider ──────────────────────────────────────────────────────────────────
-
-function Divider() {
-  return (
-    <box height={1} borderStyle="single" border={["bottom"]} opacity={0.3} />
-  );
-}
-
-// ─── ChatMessages ─────────────────────────────────────────────────────────────
-
-function ChatMessages({ messages }: { messages: ChatMessage[] }) {
-  return (
-    <scrollbox
-      flexGrow={1}
-      scrollY
-      stickyScroll
-      stickyStart="bottom"
-      paddingX={2}
-      paddingY={1}
-      verticalScrollbarOptions={{ showArrows: true }}
-    >
-      {messages.map((message, index) => (
-        <box key={message.id} flexDirection="column" gap={0}>
-          <ChatBubble message={message} />
-          {index < messages.length - 1 && <Divider />}
-        </box>
-      ))}
-    </scrollbox>
-  );
-}
-
-// ─── App ──────────────────────────────────────────────────────────────────────
+const SERVER_URL = "http://localhost:3000";
 
 export function App() {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [draft, setDraft] = useState("");
+  // api: `${SERVER_URL}/api/chat`,
 
-  const sendMessage = useCallback((value: string) => {
-    const trimmed = value.trim();
-    if (!trimmed) return;
 
-    const now = Date.now();
+  const {error, messages,setMessages, sendMessage,status} = useChat({
+    transport: new DefaultChatTransport({
+      api: `${SERVER_URL}/api/chat`,
+    }),
+  });
 
-    setMessages((prev) => [
-      ...prev,
-      {
-        id:        `${now}-user`,
-        role:      "user",
-        text:      trimmed,
-        timestamp: now,
-      },
-      {
-        id:        `${now}-assistant`,
-        role:      "assistant",
-        text:      "ShiftTab will answer here once AI integration is added.",
-        timestamp: now + 1,
-      },
-    ]);
 
-    setDraft("");
-  }, []);
+
+
 
   return (
     <box flexDirection="column" height="100%" width="100%">
-      <Navbar />
+      <Navbar  />
 
-      <box flexGrow={1}>
-        {messages.length === 0
-          ? <EmptyState />
-          : <ChatMessages messages={messages} />}
-      </box>
+      <ChatMessages messages={messages} status={status} />
+
+      {error && (
+        <box paddingLeft={2} paddingRight={2} flexShrink={0}>
+          <text>Error: {error.message}</text>
+        </box>
+      )}
 
       <ChatInput
-        value={draft}
-        onValueChange={setDraft}
-        onSubmit={sendMessage}
+        sendMessage={sendMessage}
+        status={status}
       />
     </box>
   );
