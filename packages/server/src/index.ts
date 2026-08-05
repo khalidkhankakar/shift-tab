@@ -14,6 +14,8 @@ app.get('/', (c) => {
 
 app.post("/api/chat", async (c) => {
 
+  console.log(process.env.GOOGLE_GENERATIVE_AI_API_KEY)
+
   const { messages }: { messages: UIMessage[] } = await c.req.json();
 
 
@@ -25,7 +27,7 @@ app.post("/api/chat", async (c) => {
   });
 
   // toDataStreamResponse() produces a standard Response — return it directly from Hono
-  return result.toTextStreamResponse();
+  return result.toUIMessageStreamResponse();
 });
 
 const PORT = Number(process.env.PORT ?? 3000);

@@ -39,7 +39,12 @@ export function ChatInput({ sendMessage, status }: ChatInputProps) {
         flexGrow={1}
         value={inputValue}
         onChange={setInputValue}
-        onSubmit={()=>sendMessage({ text: inputValue })}
+        onSubmit={(value) => {
+          const text = (value ?? "").toString().trim();
+          if (!text || isLoading) return;
+          sendMessage({ text });
+          setInputValue("");
+        }}
         placeholder={isLoading ? "Waiting for response..." : "Type a message and press Enter"}
         placeholderColor="gray"
         focused={!isLoading}

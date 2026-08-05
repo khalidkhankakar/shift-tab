@@ -1,6 +1,7 @@
 
 import { TextAttributes } from "@opentui/core";
 import type { ChatStatus, UIMessage } from "ai";
+import EmptyState from "./empty-state";
 
 const ROLE_COLOR: Record<string, string> = {
   user: "cyan",
@@ -31,7 +32,7 @@ function ChatBubble({ message }: ChatBubbleProps) {
       paddingLeft={2}
       paddingRight={2}
     >
-      <text bg={color} attributes={TextAttributes.BOLD}>
+      <text attributes={TextAttributes.BOLD}>
         {label}
       </text>
       <box
@@ -44,7 +45,13 @@ function ChatBubble({ message }: ChatBubbleProps) {
         {message.parts.map((part, i) => {
             switch (part.type) {
               case 'text':
-                return <text wrapMode="word" bg="white" key={`${message.id}-${i}`}>{part.text}</text>;
+                return (
+                  <text wrapMode="word"  key={`${message.id}-${i}`}>
+                    {part.text}
+                  </text>
+                );
+              default:
+                return null;
             }
           })}
       </box>
@@ -60,24 +67,22 @@ interface ChatMessagesProps {
 export function ChatMessages({ messages, status }: ChatMessagesProps) {
   if (messages.length === 0) {
     return (
-      <box flexGrow={1} alignItems="center" justifyContent="center">
-        <text bg="gray">No messages yet. Start a conversation below.</text>
-      </box>
+      <EmptyState />
     );
   }
 
   return (
-    <scrollbox flexGrow={1} stickyScroll stickyStart="bottom" flexDirection="column">
+    <scrollbox height={'100%'}  paddingLeft={1} paddingRight={1}>
       {messages.map((msg) => (
         <ChatBubble key={msg.id} message={msg} />
       ))}
-      {status =='streaming' && (
+      {status == 'streaming' && (
         <box paddingLeft={2}>
-          <text bg="green" attributes={TextAttributes.BOLD}>
+          <text attributes={TextAttributes.BOLD}>
             ShiftTab
           </text>
           <box borderStyle="rounded" borderColor="green" paddingLeft={1} paddingRight={1}>
-            <text bg="gray">▌</text>
+            <text >▌</text>
           </box>
         </box>
       )}
