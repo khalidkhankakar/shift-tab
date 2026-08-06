@@ -1,12 +1,14 @@
-
 import { TextAttributes } from "@opentui/core";
 import type { ChatStatus, UIMessage } from "ai";
+import { useEffect, useState } from "react";
 import EmptyState from "./empty-state";
+import Markdown from "./markdown";
+
+
 
 const ROLE_COLOR: Record<string, string> = {
-  user: "cyan",
-  assistant: "green",
-  system: "gray",
+  user: "#7dd3fc",
+  assistant: "#9ece6a",
 };
 
 const ROLE_LABEL: Record<string, string> = {
@@ -15,6 +17,14 @@ const ROLE_LABEL: Record<string, string> = {
   system: "System",
 };
 
+const ROLE_ICON: Record<string, string> = {
+  user: "●",
+  assistant: "✳",
+  system: "•",
+};
+
+const SPINNER_FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+
 interface ChatBubbleProps {
   message: UIMessage;
 }
@@ -22,7 +32,12 @@ interface ChatBubbleProps {
 function ChatBubble({ message }: ChatBubbleProps) {
   const color = ROLE_COLOR[message.role] ?? "white";
   const label = ROLE_LABEL[message.role] ?? message.role;
+  const icon = ROLE_ICON[message.role] ?? "•";
   const isUser = message.role === "user";
+  const textContent = message.parts
+    .filter((part) => part.type === "text")
+    .map((part) => part.text)
+    .join("\n\n");
 
   return (
     <box
@@ -32,9 +47,13 @@ function ChatBubble({ message }: ChatBubbleProps) {
       paddingLeft={2}
       paddingRight={2}
     >
-      <text attributes={TextAttributes.BOLD}>
-        {label}
-      </text>
+      <box flexDirection="row" gap={1}>
+        {!isUser && <text fg={color}>{icon}</text>}
+        <text attributes={TextAttributes.BOLD} fg={color}>
+          {label}
+        </text>
+        {isUser && <text fg={color}>{icon}</text>}
+      </box>
       <box
         borderStyle="rounded"
         borderColor={color}
@@ -42,18 +61,34 @@ function ChatBubble({ message }: ChatBubbleProps) {
         paddingRight={1}
         maxWidth="80%"
       >
-        {message.parts.map((part, i) => {
-            switch (part.type) {
-              case 'text':
-                return (
-                  <text wrapMode="word"  key={`${message.id}-${i}`}>
-                    {part.text}
-                  </text>
-                );
-              default:
-                return null;
-            }
-          })}
+        {textContent ? <Markdown content={textContent} /> : null}
+      </box>
+    </box>
+  );
+}
+
+function ThinkingIndicator() {
+  const [frame, setFrame] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setFrame((f) => (f + 1) % SPINNER_FRAMES.length);
+    }, 80);
+    return () => clearInterval(id);
+  }, []);
+
+  return (
+    <box flexDirection="column" marginBottom={1} paddingLeft={2}>
+      <box flexDirection="row" gap={1}>
+        <text fg={ROLE_COLOR.assistant}>{ROLE_ICON.assistant}</text>
+        <text attributes={TextAttributes.BOLD} fg={ROLE_COLOR.assistant}>
+          {ROLE_LABEL.assistant}
+        </text>
+      </box>
+      <box borderStyle="rounded" borderColor={ROLE_COLOR.assistant} paddingLeft={1} paddingRight={1}>
+        <text fg={ROLE_COLOR.assistant}>
+          {SPINNER_FRAMES[frame]} Thinking
+        </text>
       </box>
     </box>
   );
@@ -72,20 +107,17 @@ export function ChatMessages({ messages, status }: ChatMessagesProps) {
   }
 
   return (
-    <scrollbox height={'100%'}  paddingLeft={1} paddingRight={1}>
+    <scrollbox
+      height={'100%'}
+      paddingLeft={1}
+      paddingRight={1}
+      stickyScroll
+      stickyStart="bottom"
+    >
       {messages.map((msg) => (
         <ChatBubble key={msg.id} message={msg} />
       ))}
-      {status == 'streaming' && (
-        <box paddingLeft={2}>
-          <text attributes={TextAttributes.BOLD}>
-            ShiftTab
-          </text>
-          <box borderStyle="rounded" borderColor="green" paddingLeft={1} paddingRight={1}>
-            <text >▌</text>
-          </box>
-        </box>
-      )}
+      {status === 'streaming' || status === 'ready' && <ThinkingIndicator />}
     </scrollbox>
   );
 }

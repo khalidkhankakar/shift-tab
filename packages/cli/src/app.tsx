@@ -5,6 +5,7 @@ import Navbar from "./components/navbar";
 import { ChatMessages } from "./components/chat-messages";
 import { ChatInput } from "./components/chat-input";
 import { DefaultChatTransport } from "ai";
+import it from "zod/v4/locales/it.js";
 
 const SERVER_URL = "http://localhost:3000";
 
@@ -26,8 +27,8 @@ export function App() {
 
     const fakeMessages = [
       { id: "m1", role: "system", parts: [{ type: "text", text: "Conversation started" }] },
-      { id: "m2", role: "user", parts: [{ type: "text", text: "Hi — can you help me refactor a function?" }] },
-      { id: "m3", role: "assistant", parts: [{ type: "text", text: "Sure — share the function and tell me what the goal is." }] },
+      { id: "m2", role: "user", parts: [{ type: "text", text: `# Markdown Heading  ` }] },
+      { id: "m3", role: "assistant", parts: [{ type: "text", text: "# BoxRenderable\n\nA container component with borders, background colors, and layout capabilities. Use it to create panels, frames, and organized sections.\n\n## Basic usage\n\n### Renderable API\n\n```typescript\nimport { BoxRenderable, createCliRenderer } from \"@opentui/core\"\n\nconst renderer = await createCliRenderer()\n\nconst panel = new BoxRenderable(renderer, {\n  id: \"panel\",\n  width: 30,\n  height: 10,\n  backgroundColor: \"#333366\",\n  borderStyle: \"double\",\n  borderColor: \"#FFFFFF\",\n})\n\nrenderer.root.add(panel)\n```\n\n### JSX API\n\n```tsx\n<box \n  width={30} \n  height={10} \n  backgroundColor=\"#333366\" \n  borderStyle=\"double\" \n  borderColor=\"#FFFFFF\"\n/>\n```\n" }] },
       { id: "m4", role: "user", parts: [{ type: "text", text: "It's long and has nested loops; I want it faster and clearer." }] },
       { id: "m5", role: "assistant", parts: [{ type: "text", text: "Consider splitting responsibilities into helpers, and avoid repeated work inside loops. Also please provide input sizes so we can focus on complexity." }] },
       { id: "m6", role: "user", parts: [{ type: "text", text: "Example input: array of 10k items, each item is an object with 3 fields." }] },
@@ -47,7 +48,7 @@ export function App() {
     <box flexDirection="column" height="100%" width="100%">
       <Navbar  />
 
-      <box flexGrow={1} >
+      <box flexGrow={1} paddingLeft={1} paddingRight={1}>
 
       <ChatMessages messages={messages} status={status} />
       </box>
@@ -58,10 +59,12 @@ export function App() {
         </box>
       )} */}
 
-      <ChatInput
-        sendMessage={sendMessage}
-        status={status}
-      />
+      <box paddingLeft={1} paddingRight={1} paddingBottom={1}>
+        <ChatInput
+          sendMessage={sendMessage}
+          status={status}
+        />
+      </box>
     </box>
   );
 }
