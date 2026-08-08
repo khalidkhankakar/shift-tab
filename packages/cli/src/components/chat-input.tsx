@@ -1,7 +1,9 @@
 import { TextAttributes } from "@opentui/core";
 import type { UseChatHelpers } from "@ai-sdk/react";
 import type { ChatStatus, UIMessage } from "ai";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import CommandSuggestionBar from "./commands/command-suggestion-bar";
+
 
 interface ChatInputProps {
   sendMessage: UseChatHelpers<UIMessage>["sendMessage"];
@@ -12,11 +14,33 @@ const SPINNER_FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", 
 
 export function ChatInput({ sendMessage, status }: ChatInputProps) {
 
-    const [inputValue, setInputValue] = useState("");
-
+  const [inputValue, setInputValue] = useState("");
   const isLoading = status === 'streaming';
-
   const [spinnerFrame, setSpinnerFrame] = useState(0);
+
+  const isCommandMode = inputValue.startsWith('/')
+  const commandQuery = inputValue.slice(0)
+
+  const handleCommandSelect = (commandValue: string) => {
+    setInputValue(commandValue)
+  }
+
+  const handleSubmit = () => {
+    const text = (inputValue ?? "").toString().trim();
+    if (!text || isLoading) return;
+
+    if (text.startsWith('/')) {
+      return
+
+    } else {
+      sendMessage({ text });
+    }
+    setInputValue("");
+  }
+
+
+
+
   useEffect(() => {
     if (!isLoading) return;
     const id = setInterval(() => {
@@ -25,20 +49,22 @@ export function ChatInput({ sendMessage, status }: ChatInputProps) {
     return () => clearInterval(id);
   }, [isLoading]);
 
-  const handleKey = useCallback(
-    (key: string) => {
-      if (key === "return" && inputValue.trim()) {
-        sendMessage({ text: inputValue });
-      }
-    },
-    [sendMessage, isLoading, inputValue]
-  );
+  // TODO: OPTIMIZATION LATER
+  // const handleKey = useCallback(
+  //   (key: string) => {
+  //     if (key === "return" && inputValue.trim()) {
+  //       sendMessage({ text: inputValue });
+  //     }
+  //   },
+  //   [sendMessage, isLoading, inputValue]
+  // );
 
   const accentColor = isLoading ? "#e0af68" : "#7dd3fc";
   const icon = isLoading ? SPINNER_FRAMES[spinnerFrame] : "›";
 
   return (
     <box flexDirection="column" flexShrink={0}>
+      {isCommandMode ? <CommandSuggestionBar onSelectCommand={handleCommandSelect} query={commandQuery} /> : null}
       <box
         flexDirection="row"
         alignItems="center"
@@ -51,19 +77,17 @@ export function ChatInput({ sendMessage, status }: ChatInputProps) {
         paddingLeft={1}
         paddingRight={1}
       >
-        <text bg={accentColor} fg="#1a1b26" marginRight={1}>
+        <text bg={accentColor} fg="#1a1b268b" marginRight={1}>
           {` ${icon} `}
         </text>
         <input
           flexGrow={1}
           value={inputValue}
-          onChange={setInputValue}
-          onSubmit={(value) => {
+          onInput={(value) => {
             const text = (value ?? "").toString().trim();
-            if (!text || isLoading) return;
-            sendMessage({ text });
-            setInputValue("");
+            setInputValue(text)
           }}
+          onSubmit={handleSubmit}
           placeholder={isLoading ? "Waiting for response..." : "Type a message and press Enter"}
           placeholderColor="gray"
           focused={!isLoading}
@@ -71,6 +95,7 @@ export function ChatInput({ sendMessage, status }: ChatInputProps) {
       </box>
       <box flexDirection="row" justifyContent="space-between" paddingLeft={1} paddingRight={1}>
         <text attributes={TextAttributes.DIM}>↵ send</text>
+        <text attributes={TextAttributes.DIM}>/ commands</text>
         <text attributes={TextAttributes.DIM}>
           {isLoading ? "Streaming…" : `${inputValue.length} chars`}
         </text>

@@ -1,0 +1,1 @@
+const commandsArr = ['/new', '/model', '/clear', '/delete', '/copy', '/exit']
