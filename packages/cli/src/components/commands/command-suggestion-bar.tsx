@@ -49,7 +49,7 @@ const CommandSuggestionBar = ({ query = "", onSelectCommand }: { query: string, 
 
     return (
         <box
-            width={'100%'} backgroundColor={'#0b0c1b'} position="absolute" bottom={5}   >
+            width={'100%'}  backgroundColor="black"  borderStyle="rounded" borderColor="#7dd3fc"  padding={1} position="absolute" bottom={5}   >
             <select
                 height={10}
                 options={filteredCommands}

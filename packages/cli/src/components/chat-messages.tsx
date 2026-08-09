@@ -46,6 +46,7 @@ function ChatBubble({ message }: ChatBubbleProps) {
       marginBottom={1}
       paddingLeft={2}
       paddingRight={2}
+      zIndex={-1}
     >
       <box flexDirection="row" gap={1}>
         {!isUser && <text fg={color}>{icon}</text>}
