@@ -1,1 +1,1 @@
-const commandsArr = ['/new', '/model', '/clear', '/delete', '/copy', '/exit']
+export const commandsArr = ['/new', '/model', '/clear', '/delete', '/copy', '/exit']

@@ -30,7 +30,7 @@ export function App() {
 
 
   return (
-    <box flexDirection="column" height="100%" width="100%">
+    <box flexDirection="column" backgroundColor={'black'} height="100%" width="100%">
       <Navbar  />
 
       <box flexGrow={1} paddingLeft={1} paddingRight={1}>

@@ -3,6 +3,7 @@ import type { UseChatHelpers } from "@ai-sdk/react";
 import type { ChatStatus, UIMessage } from "ai";
 import { useEffect, useState } from "react";
 import CommandSuggestionBar from "./commands/command-suggestion-bar";
+import { commandsArr } from "./commands/commands";
 
 
 interface ChatInputProps {
@@ -17,9 +18,17 @@ export function ChatInput({ sendMessage, status }: ChatInputProps) {
   const [inputValue, setInputValue] = useState("");
   const isLoading = status === 'streaming';
   const [spinnerFrame, setSpinnerFrame] = useState(0);
+  const [isCompletedCommand, setIsCompletedCommand] = useState(false)
 
-  const isCommandMode = inputValue.startsWith('/')
+  const isCommandMode = inputValue.startsWith('/') && isCompletedCommand == false
   const commandQuery = inputValue.slice(0)
+
+  useEffect(()=>{
+
+    const completed = commandsArr.includes(inputValue)
+    setIsCompletedCommand(completed)
+
+  }, [inputValue])
 
   const handleCommandSelect = (commandValue: string) => {
     setInputValue(commandValue)

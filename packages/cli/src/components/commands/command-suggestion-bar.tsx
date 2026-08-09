@@ -3,28 +3,38 @@ import { TextAttributes } from "@opentui/core"
 const ALL_COMMANDS = [
     {
         name: '/new',
-        description: 'start a new conversation'
+        description: 'start a new conversation',
+        execute: () => {}
     },
     {
 
         name: '/model',
-        description: 'select a AI model'
+        description: 'select a AI model',
+        execute: () => {}   
     },
     {
         name: '/clear',
-        description: 'clear the terminal and start a new chat'
+        description: 'clear the terminal and start a new chat',
+        execute: () => {}
+
     },
     {
         name: '/delete',
-        description: 'delete the perminality this session and exit'
+        description: 'delete the perminality this session and exit',
+        execute: () => {}
+
     },
     {
         name: '/copy',
-        description: 'copy the last agent response'
+        description: 'copy the last agent response',
+        execute: () => {}
+
     },
     {
         name: '/exit',
-        description: 'exit shift-tab'
+        description: 'exit shift-tab',
+        execute: () => {}
+
     }
 ]
 
@@ -33,15 +43,7 @@ const CommandSuggestionBar = ({ query = "", onSelectCommand }: { query: string, 
 
     const filteredCommands = ALL_COMMANDS.filter((cmd) => cmd.name.toLowerCase().startsWith(query.toLowerCase()));
 
-    if (filteredCommands.length === 0) {
-        return (
-            <box
-                width={'100%'} backgroundColor={'gray'} padding={1} gap={1} position="absolute" bottom={5}   >
-                <text attributes={TextAttributes.BOLD}>No matching commmands</text>
-            </box>
-        )
-    }
-
+    if(filteredCommands.length <= 0) return null;
 
 
 
@@ -51,9 +53,8 @@ const CommandSuggestionBar = ({ query = "", onSelectCommand }: { query: string, 
             <select
                 height={10}
                 options={filteredCommands}
-                onChange={(idx, option) => {
-                    if (!option) return;
-                    onSelectCommand(option.name)
+                onSelect={(idx, option) => {
+                  if (option) onSelectCommand(option.name)
                 }}
                 padding={1}
             />
