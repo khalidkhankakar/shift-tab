@@ -51,7 +51,7 @@ export function App() {
   }, [messages]);
 
 
-    const USE_FAKE_MESSAGES = true;
+    const USE_FAKE_MESSAGES = false;
 
   useEffect(() => {
     if (!USE_FAKE_MESSAGES) return;

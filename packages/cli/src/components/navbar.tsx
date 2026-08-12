@@ -1,7 +1,6 @@
 const Navbar = () => {
   return (
     <box
-    backgroundColor={'black'}
       flexDirection="row"
       alignItems="center"
       justifyContent="center"
