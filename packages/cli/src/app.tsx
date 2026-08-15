@@ -1,15 +1,3 @@
-/**
- * App.tsx — top-level wiring for the ShiftTab command system.
- *
- * This shows the integration pattern.  Merge with your existing App.tsx —
- * the key additions are:
- *   1. `model` state + `setModel`
- *   2. `modelSelectorOpen` state + handlers
- *   3. `chatKey` state for forcing useChat to remount (new/clear)
- *   4. `ModelSelector` overlay rendered at the root level
- *   5. Deriving `lastAssistantMessage` from messages for /copy
- */
-
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { useChat } from "@ai-sdk/react";
 import { useAppContext } from "@opentui/react";
