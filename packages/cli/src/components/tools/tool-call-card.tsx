@@ -12,7 +12,7 @@ function useSpinner(active: boolean): string {
     const id = setInterval(() => setFrame((f) => (f + 1) % SPINNER_FRAMES.length), 80);
     return () => clearInterval(id);
   }, [active]);
-  return SPINNER_FRAMES[frame];
+  return SPINNER_FRAMES[frame] ?? "";
 }
 
 // ─── icon / colour maps ──────────────────────────────────────────────────────
@@ -115,9 +115,9 @@ export function ToolCallCard<TOOLS extends UITools = UITools>({
     state === "output-error" && "errorText" in part ? (part.errorText as string) : null;
 
   return (
-    <box
+      <box
       flexDirection="column"
-      borderStyle="round"
+      borderStyle="rounded"
       borderColor={color}
       marginTop={0}
       marginBottom={1}

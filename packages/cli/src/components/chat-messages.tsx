@@ -18,7 +18,9 @@ import { useEffect, useState } from "react";
 import EmptyState from "./empty-state";
 import Markdown from "./markdown";
 // Server exports MyUIMessage so we get the exact TOOLS generic
-import type { MyUIMessage } from "../../../server/src";
+// Use a local, looser UIMessage alias instead of importing server types
+import type { UIMessage as BaseUIMessage, ToolUIPart, DynamicToolUIPart } from "ai";
+type MyUIMessage = BaseUIMessage<any, any, any>;
 import { ToolCallCard } from "./tools/tool-call-card";
 
 // ─── constants ───────────────────────────────────────────────────────────────
@@ -48,7 +50,7 @@ function useSpinner(): string {
     const id = setInterval(() => setFrame((f) => (f + 1) % SPINNER_FRAMES.length), 80);
     return () => clearInterval(id);
   }, []);
-  return SPINNER_FRAMES[frame];
+  return SPINNER_FRAMES[frame] ?? "";
 }
 
 // ─── ChatBubble ───────────────────────────────────────────────────────────────
@@ -69,10 +71,11 @@ function ChatBubble({ message }: ChatBubbleProps) {
     .join("\n\n");
 
   // Collect tool parts — typed to MyUIMessage's TOOLS via isStaticToolUIPart
-  const toolParts = message.parts.filter(
-    (p): p is Parameters<typeof ToolCallCard>[0]["part"] =>
-      isStaticToolUIPart(p) || isDynamicToolUIPart(p)
-  );
+  // Looser runtime check to avoid complex type predicate mismatches with the
+  // UI types exposed by the `ai` package across packages.
+  const toolParts = message.parts.filter((p) =>
+    typeof (p as any)?.type === "string" && (p as any).type.startsWith?.("tool-")
+  ) as Array<ToolUIPart<any> | DynamicToolUIPart>;
 
   return (
     <box
@@ -109,11 +112,8 @@ function ChatBubble({ message }: ChatBubbleProps) {
         <box flexDirection="column" width="100%" marginTop={textContent ? 1 : 0}>
           {toolParts.map((part) => (
             <ToolCallCard
-              key={
-                // Both ToolUIPart and DynamicToolUIPart have toolCallId
-                (part as { toolCallId: string }).toolCallId
-              }
-              part={part}
+              key={(part as { toolCallId: string }).toolCallId}
+              part={part as any}
             />
           ))}
         </box>

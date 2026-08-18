@@ -11,7 +11,7 @@ import { ChatMessages } from "./components/chat-messages";
 import Navbar from "./components/navbar";
 
 const SERVER_URL = "http://localhost:3000";
-const DEFAULT_MODEL = AVAILABLE_MODELS[0].id; // "claude-sonnet-4-6"
+const DEFAULT_MODEL = AVAILABLE_MODELS[0]?.id ?? "claude-sonnet-4-6";
  
 
 export function App() {
@@ -35,7 +35,10 @@ export function App() {
   // ── last assistant message for /copy ────────────────────────────────────────
   const lastAssistantMessage = useMemo(() => {
     const msgs = [...messages].reverse();
-    return msgs.find((m) => m.role === "assistant")?.parts[0]?.type=== "text" ? msgs.find((m) => m.role === "assistant")?.parts[0] ?? "" : "";
+    const m = msgs.find((m) => m.role === "assistant");
+    if (!m) return "";
+    const textPart = m.parts.find((p) => (p as any).type === "text");
+    return (textPart as any)?.text ?? "";
   }, [messages]);
 
 
@@ -58,12 +61,18 @@ export function App() {
     setChatKey((k) => k + 1);
   }, [setMessages]);
 
-  const handleDeleteAndExit = useCallback(() => {
+    const handleDeleteAndExit = useCallback(() => {
     // In a real implementation, persist a "deleted" flag to disk here,
     // then destroy the renderer and quit.
     setMessages([]);
     renderer?.destroy();
-    process.exit(0);
+    // `process.exit` may not be available in all environments (bun renderer).
+    // Use globalThis if present.
+    if (typeof process !== "undefined" && typeof process.exit === "function") {
+      process.exit(0);
+    } else if (typeof (globalThis as any).Deno !== "undefined" && typeof (globalThis as any).Deno.exit === "function") {
+      (globalThis as any).Deno.exit(0);
+    }
   }, [renderer, setMessages]);
 
   const handleOpenModelSelector = useCallback(() => {
@@ -100,7 +109,7 @@ export function App() {
       <ChatInput
         sendMessage={sendMessage}
         status={status}
-        lastAssistantMessage={lastAssistantMessage}
+        lastAssistantMessage={lastAssistantMessage as string}
         onNewChat={handleNewChat}
         onClearChat={handleClearChat}
         onDeleteAndExit={handleDeleteAndExit}

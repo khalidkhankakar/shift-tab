@@ -2,9 +2,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 // Base directory for all file system operations
-const BASE_DIR = path.join(
-    process.cwd()
-);
+const cwd = typeof process !== 'undefined' && typeof process.cwd === 'function' ? process.cwd() : '.';
+const BASE_DIR = path.join(cwd);
 
 // Ensure the base directory exists
 function ensureBaseDir(): void {
@@ -191,7 +190,7 @@ export function listDirectory(dirPath: string = '.'): {
             };
         }
 
-        const items = fs.readdirSync(fullPath).map((item) => {
+        const items = fs.readdirSync(fullPath).map((item: string) => {
             const itemPath = path.join(fullPath, item);
             const itemStats = fs.statSync(itemPath);
             return {

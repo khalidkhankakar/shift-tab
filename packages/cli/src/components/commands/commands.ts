@@ -67,7 +67,9 @@ export const ALL_COMMANDS: Command[] = [
         description: "exit ShiftTab",
         execute: (ctx) => {
             ctx.renderer?.destroy();
-            process.exit(0);
+            if (typeof process !== "undefined" && typeof process.exit === "function") {
+                process.exit(0);
+            }
         },
     },
 ];

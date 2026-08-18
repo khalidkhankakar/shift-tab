@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { convertToModelMessages, InferUITools, stepCountIs, streamText, tool, UIMessage } from "ai";
+import { convertToModelMessages, stepCountIs, streamText, tool, createUIMessageStreamResponse, toUIMessageStream } from "ai";
+import type { InferUITools, UIMessage } from "ai";
 import { google } from "@ai-sdk/google";
 import * as fsTools from './file-system';
 import { z } from 'zod';
@@ -12,12 +13,6 @@ app.use("*", cors());
 app.get('/', (c) => {
   return c.text('Hello Hono!')
 })
-export type MyUIMessage = UIMessage<
-  never,
-  never,
-  InferUITools<typeof tools>
->;
-
 
 
 const tools = {
@@ -115,10 +110,13 @@ app.post("/api/chat", async (c) => {
     stopWhen: [stepCountIs(10)],
   });
 
-  // toDataStreamResponse() produces a standard Response — return it directly from Hono
-
-  return result.toUIMessageStreamResponse();
+  // Convert the model text stream into a UI message stream response for the client
+  return createUIMessageStreamResponse({
+    stream: toUIMessageStream({ stream: result.stream }),
+  });
 });
+
+export type MyUIMessage = UIMessage<never, never, InferUITools<typeof tools>>;
 
 const PORT = Number(process.env.PORT ?? 3000);
 
